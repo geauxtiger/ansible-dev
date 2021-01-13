@@ -1,0 +1,10 @@
+---
+- name: Copying files from controller to hosts
+  hosts: dte
+
+  tasks:
+
+   - name: Copy Fry's resume to hosts
+     copy:
+       src: ~/ans/files/fry.txt
+       dest: ~/fry.txt
