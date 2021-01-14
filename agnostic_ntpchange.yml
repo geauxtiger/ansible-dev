@@ -1,0 +1,36 @@
+---
+- name: change switch configuration
+  hosts: eosswitches:iosswitches   # these two groups
+  gather_facts: false
+  become: yes # run the entire playbook as enable
+  connection: network_cli # required mode
+
+  tasks:
+
+    - name: load new NTP configuration
+      cli_config:
+        config: "{{ntp_commands}}"
+      notify:
+        - save and commit
+
+  handlers:
+    # handlers only run if a task runs that
+    # notifies the handler to run
+    - name: save and commit  # this name matches the notify
+      cli_command:
+        command: "{{save}}"
+
+    - name: pull backup from switches
+      cli_command:
+        command: "{{backup}}"
+      register: backup
+
+    - name: ensure backup directory is created
+      file:
+        path: ~/ans/backup/
+        state: directory
+
+    - name: write out the backup to a file
+      copy:
+        content: "{{backup.stdout}}"
+        dest: "~/ans/backup/{{inventory_hostname}}.backup"
